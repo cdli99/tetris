@@ -3,14 +3,19 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>CH1EX2: Hello World HTML Page With A DIV </title>
-  <script type="text/javascript" src="canvasapp.js"></script>
-  <script src="lib/modernizr.2.8.3.js"></script>
+  <title>Tetris</title>
+  <!-- script type="text/javascript" src="canvasapp.js"></script-->
+  <!-- script src="lib/modernizr.2.8.3.js"></script-->
 </head>
 <body>
 <div style="position: absolute; top: 50px; left: 50px;">
-  Hello World!
+    <canvas id="canvas" width="500" height="300">You browser does  not support HTML5 Canvas</canvas>
+
+    <form>
+        <input type="button" id="startGame" value="Run">
+    </form>
 </div>
-<canvas id="canvas" width="500" height="300">You browser does  not support HTML5 Canvas</canvas>
+
+<script type="text/javascript" src="canvasapp.js"></script>
 </body>
 </html>
