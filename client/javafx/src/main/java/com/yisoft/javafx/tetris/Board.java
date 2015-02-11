@@ -62,9 +62,9 @@ public class Board extends Pane {
 		return false;
 	}
 
-	public void run() {
-		boolean okToRun = currentBlock.dropByOne();
-		if (!okToRun) {
+	public void tick() {
+		boolean okToDrop = currentBlock.dropByOne();
+		if (!okToDrop) {
 			storeCurrent();
 			if (!isGameOver()) {
 				nextPiece();

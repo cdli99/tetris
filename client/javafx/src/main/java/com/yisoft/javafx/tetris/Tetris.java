@@ -119,7 +119,7 @@ public class Tetris {
 		addKeyListener(scene);
 		primaryStage.resizableProperty().setValue(false);
 		primaryStage.show();
-		runGame();
+		tick();
 	}
 
 	private void addKeyListener(Scene scn) {
@@ -175,7 +175,7 @@ public class Tetris {
 		Platform.exit();
 	}
 
-	private void runGame() {
+	private void tick() {
 		System.out.printf("runGame......%b\n",board.isGameOver());
 		running = true;
 		if (!board.isGameOver() && running) {
@@ -190,8 +190,8 @@ public class Tetris {
 					Platform.runLater(() -> {
 						System.out.println("PLatform>>>Runlater...");
 						System.out.println(LocalTime.now());
-						board.run();
-						runGame();
+						board.tick();
+						tick();
 					});
 				}
 			}, isTurboMode()?board.getDelay()/4:board.getDelay());
@@ -211,7 +211,7 @@ public class Tetris {
 			timer.cancel();
 			timer.purge();
 		} else {
-			runGame();
+			tick();
 		}
 	}
 
@@ -219,7 +219,7 @@ public class Tetris {
 		System.out.println("newGame");
 		scoreText.setText("" + board.getScore());
 		board.reset();
-		runGame();
+		tick();
 		board.requestFocus();
 	}
 
