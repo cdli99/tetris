@@ -4,9 +4,9 @@
 window.onload = canvasApp();
 
 function canvasApp() {
-//    if(!canvasSupport()){
-//        return;
-//    }
+    if(!canvasSupport()){
+        return;
+    }
 
     var theCanvas = document.getElementById("canvas");
 
@@ -36,7 +36,7 @@ function canvasApp() {
         context.fillStyle = "#000000";
         context.font = "20px _sans";
         context.textBaseline = "top";
-        context.fillText("Hello Tetris!",195,80);
+        context.fillText("Hello Tetris!!!",195,80);
 
         //image
 
