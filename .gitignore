@@ -1,6 +1,6 @@
-.DS_Store
-.idea
-target/*
-.settings/*
-.project
-.classpath
+**/.DS_Store
+**/.idea
+**/target
+**/.settings
+**/.project
+**/.classpath
