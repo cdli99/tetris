@@ -15,7 +15,9 @@ var theCanvas;
 var theRunBtn;
 var letters=["Hello Tetris!!!"];
 
-window.onload = canvasApp();
+//window.onload = canvasApp();
+window.addEventListener('load',canvasApp(),false)
+
 
 function runGame() {
     window.location.reload();
