@@ -1,10 +1,20 @@
 /**
  * Created by ali on 12/10/14.
  */
-window.onload = canvasApp();
+
+var Debugger = function(){};
+Debugger.log = function(message) {
+    try{
+        console.log(message);
+    }catch(exception){
+        console.error(exception);
+    }
+}
 
 var theCanvas;
 var theRunBtn;
+
+window.onload = canvasApp();
 
 function runGame() {
     window.location.reload();
@@ -42,19 +52,19 @@ function canvasApp() {
     theRunBtn = document.getElementById("startGame");
     theRunBtn.addEventListener('click',runGame);
 
-    console.log(theCanvas)
+    Debugger.log(theCanvas);
 
     if (!theCanvas || !theCanvas.getContext) {
-        console.log("0");
+        Debugger.log("0");
 
         return;
     }
 
-    console.log("1");
+    Debugger.log("1");
 
     drawScreen(theCanvas);
 
-    console.log("3");
+    Debugger.log("3");
 
 }
 
