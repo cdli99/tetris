@@ -13,6 +13,7 @@ Debugger.log = function(message) {
 
 var theCanvas;
 var theRunBtn;
+var letters=["Hello Tetris!!!"];
 
 window.onload = canvasApp();
 
@@ -22,9 +23,9 @@ function runGame() {
         ",height="+theCanvas.height+",toolbar=0,resizeable=0");
 }
 
-function drawScreen(canvas) {
+function drawScreen() {
     console.log("2");
-    var context = canvas.getContext("2d");
+    var context = theCanvas.getContext("2d");
 
     // background
     context.fillStyle = "#ffffaa";
@@ -34,13 +35,19 @@ function drawScreen(canvas) {
     context.fillStyle = "#000000";
     context.font = "20px _sans";
     context.textBaseline = "top";
-    context.fillText("Hello Tetris!!!",195,80);
+    context.fillText(letters.concat(),195,80);
 
     //image
 
     // box
     context.strokeStyle = "#000000";
     context.strokeRect(5,5,490,290);
+}
+
+function onKeyPressed(e){
+    var key = String.fromCharCode(e.keyCode).toLowerCase();
+    letters.push(key);
+    drawScreen();
 }
 
 function canvasApp() {
@@ -51,6 +58,7 @@ function canvasApp() {
     theCanvas = document.getElementById("canvas");
     theRunBtn = document.getElementById("startGame");
     theRunBtn.addEventListener('click',runGame);
+    window.addEventListener('keypress',onKeyPressed,true);
 
     Debugger.log(theCanvas);
 
