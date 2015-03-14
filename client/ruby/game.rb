@@ -80,8 +80,8 @@ class Piece
                [[0, 0], [0, -1], [0, 1], [0, 2]]],
                rotations([[0, 0], [0, -1], [0, 1], [1, 1]]), # L
                rotations([[0, 0], [0, -1], [0, 1], [-1, 1]]), # inverted L
-               rotations([[0, 0], [-1, 0], [0, -1], [1, -1]]), # S
-               rotations([[0, 0], [1, 0], [0, -1], [-1, -1]])] # Z
+               rotations([[0, 0], [1, 0], [0, -1], [-1, -1]]), # S
+               rotations([[0, 0], [-1, 0], [0, -1], [1, -1]])] # Z
 
   # class array 
   All_Colors = ['DarkGreen', 'dark blue', 'dark red', 'gold2', 'Purple3', 
