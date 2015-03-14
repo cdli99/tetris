@@ -3,12 +3,44 @@
  */
 window.onload = canvasApp();
 
+var theCanvas;
+var theRunBtn;
+
+function runGame() {
+    window.location.reload();
+    window.open(theCanvas.toDataURL(),"canvasImage", "left=0,top=0,widith=" +theCanvas.width+
+        ",height="+theCanvas.height+",toolbar=0,resizeable=0");
+}
+
+function drawScreen(canvas) {
+    console.log("2");
+    var context = canvas.getContext("2d");
+
+    // background
+    context.fillStyle = "#ffffaa";
+    context.fillRect(0,0,500,300);
+
+    // text
+    context.fillStyle = "#000000";
+    context.font = "20px _sans";
+    context.textBaseline = "top";
+    context.fillText("Hello Tetris!!!",195,80);
+
+    //image
+
+    // box
+    context.strokeStyle = "#000000";
+    context.strokeRect(5,5,490,290);
+}
+
 function canvasApp() {
     if(!canvasSupport()){
         return;
     }
 
-    var theCanvas = document.getElementById("canvas");
+    theCanvas = document.getElementById("canvas");
+    theRunBtn = document.getElementById("startGame");
+    theRunBtn.addEventListener('click',runGame);
 
     console.log(theCanvas)
 
@@ -20,30 +52,9 @@ function canvasApp() {
 
     console.log("1");
 
-    drawScreen();
+    drawScreen(theCanvas);
 
     console.log("3");
-
-    function drawScreen() {
-        console.log("2");
-        var context = theCanvas.getContext("2d");
-
-        // background
-        context.fillStyle = "#ffffaa";
-        context.fillRect(0,0,500,300);
-
-        // text
-        context.fillStyle = "#000000";
-        context.font = "20px _sans";
-        context.textBaseline = "top";
-        context.fillText("Hello Tetris!!!",195,80);
-
-        //image
-
-        // box
-        context.strokeStyle = "#000000";
-        context.strokeRect(5,5,490,290);
-    }
 
 }
 
