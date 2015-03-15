@@ -14,6 +14,7 @@ Debugger.log = function(message) {
 // Canvas start from top-left, and moves towards bottom-right.
 var theCanvas;
 var theStartBtn, theStopBtn;
+var running=false;
 var theTimer;
 var NUM_COLUMNS = 10; // total columns on board
 var NUM_ROWS = 27; // total rows on board
@@ -37,22 +38,28 @@ var theTick = 300; // miliseconds
 window.addEventListener('load',canvasApp,false)
 
 function start() {
-    if(isRunning()) return;
-    theRows=generateRows(NUM_ROWS,NUM_COLUMNS,3);
-    theTimer=window.setInterval(drawScreen, theTick);
+    if(running) return;
+    else{
+        theRows=generateRows(NUM_ROWS,NUM_COLUMNS,3);
+        running=true;
+        tick();
+    }
 }
 function stop(){
-    theRows=[]; // element of theRows are Rectangle with color
-    drawScreen();
-    clearTimer();
+    running=false;
 }
 
 function pause(){
-    Debugger.log("pause ..."+theTimer)
-    if(theTimer) {
-        clearTimer();
-    }else
-        start();
+    running=!running;
+    tick();
+}
+
+function tick() {
+    if (theTimer !== null) clearTimeout(theTimer);
+    if (running) {
+        drawScreen();
+        theTimer = setTimeout(tick, theTick);
+    }
 }
 
 function drawScreen() {
@@ -172,12 +179,6 @@ function rotations(array) {
     return [array, rotate1, rotate2, rotate3];
 }
 
-function clearTimer(){
-    if(theTimer!=null){
-        window.clearInterval(theTimer);
-        theTimer=null;
-    }
-}
 
 function generateRows(numRow,numCol,randRow){
     rows=new Array(numRow)
@@ -202,11 +203,4 @@ function generateRows(numRow,numCol,randRow){
     }
     return rows;
 }
-
-function isRunning(){
-    return theTimer!=null;
-}
-
-
-
 
