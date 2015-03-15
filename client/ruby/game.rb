@@ -93,6 +93,7 @@ end
 class Board
 
   def initialize (game)
+    # grid element is TetrisRect
     @grid = Array.new(num_rows) {Array.new(num_columns)}
     @current_block = Piece.next_piece(self)
     @score = 0
