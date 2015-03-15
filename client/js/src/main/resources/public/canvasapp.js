@@ -29,7 +29,7 @@ var thePieces = [[[[0, 0], [1, 0], [0, 1], [1, 1]]],  // square (only needs one)
         rotations([[0, 0], [0, -1], [0, 1], [1, 1]]), // L
         rotations([[0, 0], [0, -1], [0, 1], [-1, 1]]), // inverted L
         rotations([[0, 0], [1, 0], [0, -1], [-1, -1]]), // S
-        rotations([[0, 0], [-1, 0], [0, -1], [1, -1]])] // Z
+        rotations([[0, 0], [-1, 0], [0, -1], [1, -1]])]; // Z
 var theColors = ['DarkGreen', 'DarkBlue', 'DarkRed', 'Gold', 'Purple',
     'OrangeRed', 'LightSkyBlue']
 var theRows = []; // 2 dimensional array NUM_ROWS x NUM_COLUMNS, row-wise, row[0] is on top.
@@ -57,9 +57,51 @@ function pause(){
 function tick() {
     if (theTimer !== null) clearTimeout(theTimer);
     if (running) {
+        var okToDrop=dropByOne();
+        if(okToDrop){
+            updateScore();
+        }else{
+            storeCurrent();
+            if(!isGameOver()){
+                nextPiece();
+            }
+        }
         drawScreen();
         theTimer = setTimeout(tick, theTick);
     }
+}
+
+function dropByOne(){
+    Debugger.log("drop down the current piece by one, and also update the current piece position");
+}
+
+function updateScore(){
+    Debugger.log("update the score");
+}
+
+function storeCurrent(){
+    Debugger.log("store the current piece position");
+}
+function isGameOver(){
+    Debugger.log("test if the game is over");
+}
+function nextPiece(){
+    Debugger.log("fetch the next piece");
+}
+function dropAllTheWay(){
+    Debugger.log("drop the piece all the way down");
+}
+function moveLeft(){
+    Debugger.log("move the piece one square left");
+}
+function moveRight(){
+    Debugger.log("move the piece one square right");
+}
+function rotateClockwise(){
+    Debugger.log("rotate the piece clockwise 90 degree")
+}
+function rotateCounterClockwise(){
+    Debugger.log("rotate the piece counter-clockwise 90 degree")
 }
 
 function drawScreen() {
@@ -100,18 +142,23 @@ function onKeyDown(e){
     switch(e.keyCode){
         case 32:
             Debugger.log("Space");
+            dropAllTheWay();
             break;
         case 37:
             Debugger.log("Left");
+            moveLeft();
             break;
         case 38:
             Debugger.log("Up");
+            rotateCounterClockwise();
             break;
         case 39:
             Debugger.log("Right");
+            moveRight();
             break;
         case 40:
             Debugger.log("Down");
+            rotateClockwise();
             break;
         default:
             break;
@@ -165,7 +212,7 @@ function resizeCanvas() {
 
 // utils
 // given an array of point, where x=point[0] and y=point[1], return an array of array
-// for 4 rotations(anticlockwise).
+// for 4 rotations(counter-clockwise).
 function rotations(array) {
     rotate1 = array.map(function(point){
         return [-point[1],point[0]];
