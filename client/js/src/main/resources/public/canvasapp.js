@@ -22,6 +22,7 @@ var UNIT=30; // square side length
 var WIDTH=NUM_COLUMNS*UNIT;
 var HEIGHT=NUM_ROWS*UNIT;
 
+var thePiece; // the current piece
 
 var thePieces = [[[[0, 0], [1, 0], [0, 1], [1, 1]]],  // square (only needs one)
         rotations([[0, 0], [-1, 0], [1, 0], [0, -1]]), // T
@@ -55,13 +56,13 @@ function pause(){
 }
 
 function tick() {
-    if (theTimer !== null) clearTimeout(theTimer);
+    if (theTimer != null) clearTimeout(theTimer);
     if (running) {
         var okToDrop=dropByOne();
         if(okToDrop){
             updateScore();
         }else{
-            storeCurrent();
+            enrollCurrent();
             if(!isGameOver()){
                 nextPiece();
             }
@@ -79,20 +80,28 @@ function updateScore(){
     Debugger.log("update the score");
 }
 
-function storeCurrent(){
-    Debugger.log("store the current piece position");
+function enrollCurrent(){
+    Debugger.log("store the current piece position to the grid.");
 }
 function isGameOver(){
     Debugger.log("test if the game is over");
 }
 function nextPiece(){
     Debugger.log("fetch the next piece");
+    var allRotations = thePieces[Math.floor(Math.random()*thePieces.length)];
+    var index = Math.floor(Math.random()*rotations.length);
+    var clr = theColors[Math.floor(Math.random()*theColors.length)];
+    thePiece={rotations: allRotations, rotationIndex:index, color:clr, x:5, y:0, moved:false};
 }
 function dropAllTheWay(){
     Debugger.log("drop the piece all the way down");
 }
 function moveLeft(){
     Debugger.log("move the piece one square left");
+    if (!isGameOver() && running){
+        move(-1, 0, 0);
+    }
+    drawScreen();
 }
 function moveRight(){
     Debugger.log("move the piece one square right");
@@ -120,7 +129,7 @@ function drawScreen() {
     for(var i=0;i<theRows.length;i++){
         for(var j=0;j<NUM_COLUMNS;j++){
             r=theRows[i][j];
-            if(r!==null){
+            if(r!=null){
                 context.fillStyle = r.color;
                 context.fillRect(r.x, r.y, r.w, r.h);
                 context.fillStyle = "Black";
@@ -200,7 +209,6 @@ function resizeCanvas() {
 }
 
 /////////// UTILS ////////////
-
 // given an array of point, where x=point[0] and y=point[1], return an array of array
 // for 4 rotations(counter-clockwise).
 function rotations(array) {
@@ -215,7 +223,6 @@ function rotations(array) {
     });
     return [array, rotate1, rotate2, rotate3];
 }
-
 
 function generateRows(numRow,numCol,randRow){
     var rows=new Array(numRow)
@@ -239,5 +246,65 @@ function generateRows(numRow,numCol,randRow){
         }
     }
     return rows;
+}
+
+/**
+ * Take the intended movement in x, y and rotation and checks to see if the
+ * movement is possible. If it is, make this movement and returns true.
+ * The movement is done by updating the basePosition
+ * <p/>
+ * This does not move the block!
+ *
+ * @param {Number} deltaX
+ * @param {Number} deltaY
+ * @param {Number} deltaRotation
+ * @return {Boolean} true if move succeed; false if cannot move
+ */
+function move(deltaX, deltaY, deltaRotation) {
+    /*
+     * Ensures that the rotation will always be a possible formation (as
+     * opposed to null) by altering the intended rotation so that it stays
+     * within the bound of the rotation array.
+     */
+    var canMove = true;
+    var potentialIndex = (thePiece.rotationIndex + deltaRotation)
+        % thePiece.rotations.length;
+    if(potentialIndex<0)
+        potentialIndex+=thePiece.rotations.length;
+    var potential = thePiece.rotations[potentialIndex];
+    /*
+     * For each individual block in the piece, check if the intended move
+     * will put the block in any occupied space
+     */
+    var canMove=potential.every(function(p,index,array){
+        return isEmptyAt(p[0] + deltaX + thePiece.x, p[1] + deltaY + thePiece.y);
+    });
+    if (canMove) {
+        thePiece.x += deltaX;
+        thePiece.y += deltaY;
+        thePiece.rotationIndex = potentialIndex;
+    }
+    return canMove;
+}
+
+/**
+ * Given row and column, check if it is in the bounds of the board and
+ * currently is empty.
+ */
+function isEmptyAt (col,row){
+    if (col < 0 || col >= NUM_COLUMNS) return false
+    else if (row < 1) return true
+    else if (row >= NUM_ROWS) return false
+    else return theRows[row][col] === null
+}
+
+/**
+ * The game is over when there is a piece extending into the second row
+ * from the top
+ */
+function isGameOver(){
+    return theRows!=null && theRows[1]!=null && theRows[1].some(function(element, index, array){
+        return element!=null;
+    });
 }
 
