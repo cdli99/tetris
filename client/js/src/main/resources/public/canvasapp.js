@@ -13,7 +13,7 @@ Debugger.log = function(message) {
 
 // Canvas start from top-left, and moves towards bottom-right.
 var theCanvas;
-var theStartBtn, theStopBtn;
+var theStartBtn, theStopBtn, thePauseBtn;
 var running=false;
 var theTimer;
 var NUM_COLUMNS = 10; // total columns on board
@@ -130,15 +130,10 @@ function drawScreen() {
     }
 }
 
-function onKeyPressed(e){
-    Debugger.log("onKeyPressed: keyCode="+e.keyCode);
-    var key = String.fromCharCode(e.keyCode).toLowerCase();
-    Debugger.log("onKeyPressed: char="+key);
-}
-
 // special keys only triggered by onKeyDown
 function onKeyDown(e){
-    Debugger.log("onKeyDown: keyCode="+ e.keyCode);
+    var key = String.fromCharCode(e.keyCode).toLowerCase();
+    Debugger.log("onKeyDown: keyCode="+ e.keyCode + ", char="+key);
     switch(e.keyCode){
         case 32:
             Debugger.log("Space");
@@ -165,10 +160,6 @@ function onKeyDown(e){
     }
 }
 
-function onKeyUp(e) {
-    Debugger.log("onKeyUp: keyCode=" + e.keyCode);
-}
-
 function canvasApp() {
     if(!canvasSupport()){
         return;
@@ -181,9 +172,7 @@ function canvasApp() {
     theStopBtn.addEventListener('click',stop);
     thePauseBtn = document.getElementById("pauseGame");
     thePauseBtn.addEventListener('click',pause);
-    window.addEventListener('keypress',onKeyPressed,false);
     window.addEventListener('keydown',onKeyDown,false);
-    window.addEventListener('keyup',onKeyUp,false);
 
     resizeCanvas();
 
@@ -210,17 +199,18 @@ function resizeCanvas() {
     theCanvas.height = HEIGHT;
 }
 
-// utils
+/////////// UTILS ////////////
+
 // given an array of point, where x=point[0] and y=point[1], return an array of array
 // for 4 rotations(counter-clockwise).
 function rotations(array) {
-    rotate1 = array.map(function(point){
+    var rotate1 = array.map(function(point){
         return [-point[1],point[0]];
     });
-    rotate2 = array.map(function(point){
+    var rotate2 = array.map(function(point){
         return [-point[0],-point[1]];
     });
-    rotate3 = array.map(function(point){
+    var rotate3 = array.map(function(point){
         return [point[1],-point[0]]
     });
     return [array, rotate1, rotate2, rotate3];
@@ -228,7 +218,7 @@ function rotations(array) {
 
 
 function generateRows(numRow,numCol,randRow){
-    rows=new Array(numRow)
+    var rows=new Array(numRow)
         .join().split(',')
         .map(function(item, index){
             return new Array(numCol).join().split(',')
