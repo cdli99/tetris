@@ -24,6 +24,8 @@ var HEIGHT=NUM_ROWS*UNIT;
 
 var thePiece; // the current piece
 
+var theScore=0; // the accumulated score
+
 var thePieces = [[[[0, 0], [1, 0], [0, 1], [1, 1]]],  // square (only needs one)
         rotations([[0, 0], [-1, 0], [1, 0], [0, -1]]), // T
         [[[0, 0], [-1, 0], [1, 0], [2, 0]], [[0, 0], [0, -1], [0, 1], [0, 2]]], // I (horizontal and vertical)
@@ -33,7 +35,7 @@ var thePieces = [[[[0, 0], [1, 0], [0, 1], [1, 1]]],  // square (only needs one)
         rotations([[0, 0], [-1, 0], [0, -1], [1, -1]])]; // Z
 var theColors = ['DarkGreen', 'DarkBlue', 'DarkRed', 'Gold', 'Purple',
     'OrangeRed', 'LightSkyBlue']
-var theRows = []; // 2 dimensional array NUM_ROWS x NUM_COLUMNS, row-wise, row[0] is on top.
+var theRows = []; // 2 dimensional array (NUM_ROWS x NUM_COLUMNS) of rects, row-wise, row[0] is on top.
 var theTick = 300; // miliseconds
 
 window.addEventListener('load',canvasApp,false)
@@ -42,7 +44,9 @@ function start() {
     if(running) return;
     else{
         theRows=generateRows(NUM_ROWS,NUM_COLUMNS,3);
+        theScore=0;
         running=true;
+        nextPiece();
         tick();
     }
 }
@@ -58,34 +62,35 @@ function pause(){
 function tick() {
     if (theTimer != null) clearTimeout(theTimer);
     if (running) {
-        var okToDrop=dropByOne();
-        if(okToDrop){
-            updateScore();
-        }else{
-            enrollCurrent();
-            if(!isGameOver()){
-                nextPiece();
-            }
-        }
+        dropByOne();
+        if(!isGameOver())
+            theTimer = setTimeout(tick, theTick);
         drawScreen();
-        theTimer = setTimeout(tick, theTick);
     }
 }
 
 function dropByOne(){
     Debugger.log("drop down the current piece by one, and also update the current piece position");
+    var moved=move(0,1,0);
+    if(!moved){
+        stackPiece();
+        eliminateRows();
+        updateScore();
+        drawScreen();
+        if(!isGameOver()){
+            nextPiece();
+        }else{
+            stop();
+        }
+    }
+    return moved;
 }
 
 function updateScore(){
     Debugger.log("update the score");
+    theScore++;
 }
 
-function enrollCurrent(){
-    Debugger.log("store the current piece position to the grid.");
-}
-function isGameOver(){
-    Debugger.log("test if the game is over");
-}
 function nextPiece(){
     Debugger.log("fetch the next piece");
     var allRotations = thePieces[Math.floor(Math.random()*thePieces.length)];
@@ -95,22 +100,33 @@ function nextPiece(){
 }
 function dropAllTheWay(){
     Debugger.log("drop the piece all the way down");
+    while (dropByOne()){
+        theScore ++;
+    }
+    if (running && !isGameOver()){
+        nextPiece();
+    }
+    drawScreen();
 }
 function moveLeft(){
     Debugger.log("move the piece one square left");
-    if (!isGameOver() && running){
-        move(-1, 0, 0);
-    }
+    move(-1, 0, 0);
     drawScreen();
 }
 function moveRight(){
     Debugger.log("move the piece one square right");
+    move(1,0,0);
+    drawScreen();
 }
 function rotateClockwise(){
-    Debugger.log("rotate the piece clockwise 90 degree")
+    Debugger.log("rotate the piece clockwise 90 degree");
+    move(0,0,1);
+    drawScreen();
 }
 function rotateCounterClockwise(){
-    Debugger.log("rotate the piece counter-clockwise 90 degree")
+    Debugger.log("rotate the piece counter-clockwise 90 degree");
+    move(0,0,-1);
+    drawScreen();
 }
 
 function drawScreen() {
@@ -127,16 +143,27 @@ function drawScreen() {
 
     // draw grids
     for(var i=0;i<theRows.length;i++){
-        for(var j=0;j<NUM_COLUMNS;j++){
-            r=theRows[i][j];
+        var row=theRows[i];
+        for(var j=0;j<row.length;j++){
+            console.log("i="+i+",j="+j)
+            var r=row[j];
             if(r!=null){
                 context.fillStyle = r.color;
-                context.fillRect(r.x, r.y, r.w, r.h);
+                context.fillRect(r.x*UNIT, r.y*UNIT, r.w*UNIT, r.h*UNIT);
                 context.fillStyle = "Black";
-                context.strokeRect(r.x, r.y, r.w, r.h);
+                context.strokeRect(r.x*UNIT, r.y*UNIT, r.w*UNIT, r.h*UNIT);
             }
         }
     }
+
+    // draw piece
+    if(thePiece!=null && thePiece.rotations!=null)
+        thePiece.rotations[thePiece.rotationIndex].forEach(function(element,index,array){
+            context.fillStyle = thePiece.color;
+            context.fillRect(UNIT*(element[0]+thePiece.x),UNIT*(element[1]+thePiece.y),UNIT,UNIT);
+            context.fillStyle = "Black";
+            context.strokeRect(UNIT*(element[0]+thePiece.x),UNIT*(element[1]+thePiece.y),UNIT,UNIT);
+        });
 }
 
 // special keys only triggered by onKeyDown
@@ -240,7 +267,7 @@ function generateRows(numRow,numCol,randRow){
         for(var j=0;j<NUM_COLUMNS;j++){
             if(Math.round(Math.random())>0){
                 var c=theColors[Math.floor(Math.random() * theColors.length)];
-                rect={x:j*UNIT,y:(NUM_ROWS-i-1)*UNIT,w:UNIT,h:UNIT,color:c};
+                var rect={x:j,y:(NUM_ROWS-i-1),w:1,h:1,color:c};
                 rows[NUM_ROWS-1-i][j]=rect;
             }
         }
@@ -255,12 +282,16 @@ function generateRows(numRow,numCol,randRow){
  * <p/>
  * This does not move the block!
  *
- * @param {Number} deltaX
+ * @param {Number} deltaX positive means moveing right.
  * @param {Number} deltaY
- * @param {Number} deltaRotation
+ * @param {Number} deltaRotation, positive is counterClockWise, negative is clockWise.
  * @return {Boolean} true if move succeed; false if cannot move
  */
 function move(deltaX, deltaY, deltaRotation) {
+    if(isGameOver() || !running){
+        return false;
+    }
+
     /*
      * Ensures that the rotation will always be a possible formation (as
      * opposed to null) by altering the intended rotation so that it stays
@@ -287,6 +318,80 @@ function move(deltaX, deltaY, deltaRotation) {
     return canMove;
 }
 
+function stackPiece(){
+    Debugger.log("parking the current piece on the stack.");
+    thePiece.rotations[thePiece.rotationIndex].forEach(function(p,index,array){
+       var x=p[0]+thePiece.x;
+       var y=p[1]+thePiece.y;
+       theRows[y][x]={x:x,y:y,w:1,h:1,color:thePiece.color};
+    });
+}
+
+function eliminateRows(){
+    Debugger.log("eliminate the filled rows if any.");
+    var bound=computeBound(thePiece.rotations[thePiece.rotationIndex]);
+    var rowsAffected=range(bound.miny,bound.maxy).map(function(row, index){
+        return thePiece.y+row;
+    });
+    if(rowsAffected.length==0){
+        rowsAffected[0]=thePiece.y;
+    }
+
+    // array of rows to remove, e.g., [3,5,11]
+    var rowsToRemove=rowsAffected.filter(function(rowIndex, index, array){
+        var row=theRows[rowIndex];
+        return row.every(function(col,ind,arr){
+           return col!==null;
+        });
+    });
+
+    // remove rowsToRemove
+    var newRows=theRows.filter(function(row,index,rows){
+        return rowsToRemove.indexOf(index)<0;
+    });
+
+    // unshift rows
+    for(var i=0;i<rowsToRemove.length;i++){
+        var row = new Array(NUM_COLUMNS).join().split(',')
+            .map(function(_){
+                return null;
+            });
+        newRows.unshift(row)
+    }
+
+    theRows=newRows;
+    //  drawScreen
+//    drawScreen();
+}
+
+/**
+ * Given array of points, return the (minx,miny,max,maxy)
+ * @param points an array of point, each point is an array[2], where array[0]=x, array[1]=y.
+ */
+function computeBound(points){
+    var minx,miny,maxx,maxy;
+    points.forEach(function(p){
+        if(minx===undefined){
+            minx=p[0];
+        }
+        if(miny===undefined){
+            miny=p[1];
+        }
+        if(maxx===undefined){
+            maxx=p[0];
+        }
+        if(maxy===undefined){
+            maxy=p[1];
+        }
+
+        if(minx>p[0]) minx=p[0];
+        if(miny>p[1]) miny=p[1];
+        if(maxx<p[0]) maxx=p[0];
+        if(maxy<p[1]) maxy=p[1];
+    });
+    return {minx:minx,miny:miny,maxx:maxx,maxy:maxy};
+}
+
 /**
  * Given row and column, check if it is in the bounds of the board and
  * currently is empty.
@@ -303,8 +408,17 @@ function isEmptyAt (col,row){
  * from the top
  */
 function isGameOver(){
+    Debugger.log("test if the game is over");
+
     return theRows!=null && theRows[1]!=null && theRows[1].some(function(element, index, array){
         return element!=null;
     });
 }
 
+function range(start, end) {
+    var foo = [];
+    for (var i = start; i <= end; i++) {
+        foo.push(i);
+    }
+    return foo;
+}
