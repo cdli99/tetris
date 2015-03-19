@@ -35,7 +35,7 @@ var thePieces = [[[[0, 0], [1, 0], [0, 1], [1, 1]]],  // square (only needs one)
         rotations([[0, 0], [-1, 0], [0, -1], [1, -1]])]; // Z
 var theColors = ['DarkGreen', 'DarkBlue', 'DarkRed', 'Gold', 'Purple',
     'OrangeRed', 'LightSkyBlue']
-var theRows = []; // 2 dimensional array (NUM_ROWS x NUM_COLUMNS) of rects, row-wise, row[0] is on top.
+var theRows = []; // 2 dimensional array (NUM_ROWS x NUM_COLUMNS) of colors, row-wise, row[0] is on top.
 var theTick = 300; // miliseconds
 
 window.addEventListener('load',canvasApp,false)
@@ -130,7 +130,8 @@ function rotateCounterClockwise(){
 }
 
 function drawScreen() {
-    console.log("drawScreen...");
+    Debugger.log("drawScreen...");
+
     var context = theCanvas.getContext("2d");
 
     // fill background
@@ -145,13 +146,12 @@ function drawScreen() {
     for(var i=0;i<theRows.length;i++){
         var row=theRows[i];
         for(var j=0;j<row.length;j++){
-            console.log("i="+i+",j="+j)
             var r=row[j];
             if(r!=null){
                 context.fillStyle = r.color;
-                context.fillRect(r.x*UNIT, r.y*UNIT, r.w*UNIT, r.h*UNIT);
+                context.fillRect(j*UNIT, i*UNIT, UNIT, UNIT);
                 context.fillStyle = "Black";
-                context.strokeRect(r.x*UNIT, r.y*UNIT, r.w*UNIT, r.h*UNIT);
+                context.strokeRect(j*UNIT, i*UNIT, UNIT, UNIT);
             }
         }
     }
@@ -267,8 +267,7 @@ function generateRows(numRow,numCol,randRow){
         for(var j=0;j<NUM_COLUMNS;j++){
             if(Math.round(Math.random())>0){
                 var c=theColors[Math.floor(Math.random() * theColors.length)];
-                var rect={x:j,y:(NUM_ROWS-i-1),w:1,h:1,color:c};
-                rows[NUM_ROWS-1-i][j]=rect;
+                rows[NUM_ROWS-1-i][j]={color:c};
             }
         }
     }
@@ -297,7 +296,6 @@ function move(deltaX, deltaY, deltaRotation) {
      * opposed to null) by altering the intended rotation so that it stays
      * within the bound of the rotation array.
      */
-    var canMove = true;
     var potentialIndex = (thePiece.rotationIndex + deltaRotation)
         % thePiece.rotations.length;
     if(potentialIndex<0)
@@ -323,7 +321,7 @@ function stackPiece(){
     thePiece.rotations[thePiece.rotationIndex].forEach(function(p,index,array){
        var x=p[0]+thePiece.x;
        var y=p[1]+thePiece.y;
-       theRows[y][x]={x:x,y:y,w:1,h:1,color:thePiece.color};
+       theRows[y][x]={color:thePiece.color};
     });
 }
 
