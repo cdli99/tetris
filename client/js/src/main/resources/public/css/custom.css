@@ -1,0 +1,9 @@
+canvas{
+    vertical-align: top;
+}
+/*
+This should be set when using `navbar-fixed-top`
+body{
+    margin-top: 60px;
+}
+*/

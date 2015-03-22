@@ -1,21 +1,64 @@
-
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Tetris</title>
-  <!-- script type="text/javascript" src="canvasapp.js"></script-->
-  <!-- script src="lib/modernizr.2.8.3.js"></script-->
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css">
+    <!-- bootstrap css -->
+    <link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap.css"/>
+    <link href="css/custom.css" rel="stylesheet" media="screen"/>
+
+    <!--bootstrap js, note the dependency jquery comes first -->
+    <script src="https://code.jquery.com/jquery-2.1.3.js"></script>
+    <script src="//maxcdn.bootstrapcdn.com/bootstrap/3.3.4/js/bootstrap.js"></script>
+
+    <title>Tetris</title>
 </head>
 <body>
-<div style="position: absolute; top: 50px; left: 50px;">
-    <canvas id="canvas" width="500" height="300">You browser does  not support HTML5 Canvas</canvas>
-
-    <form>
-        <input type="button" id="startGame" value="Start"/>
-        <input type="button" id="stopGame" value="Stop"/>
-        <input type="button" id="pauseGame" value="Pause"/>
-    </form>
+<div>
+    <nav role="navigation" class="navbar navbar-default navbar-inverse">
+        <div class="navbar-header">
+            <button type="button" data-target="#navbarCollapse" data-toggle="collapse" class="navbar-toggle">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a href="#" class="navbar-brand">Xtris</a>
+        </div>
+        <div id="navbarCollapse" class="collapse navbar-collapse">
+            <ul class="nav navbar-nav">
+                <li id="startGame" class="active"><a href="#"> <i class="fa fa-play"></i> </a></li>
+                <li id="pauseGame" class="disabled"><a href="#"> <i class="fa fa-pause"></i> </a></li>
+                <li id="stopGame" class="disabled"><a href="#"> <i class="fa fa-stop"></i> </a></li>
+                <li><a href="#"> Setting </a></li>
+                <li class="dropdown">
+                    <a data-toggle="dropdown" class="dropdown-toggle" href="#"> About <b class="caret"></b></a>
+                    <ul role="menu" class="dropdown-menu">
+                        <li><a href="#"> Xtris </a></li>
+                        <li><a href="#"> Bitrix </a></li>
+                        <li class="divider"></li>
+                        <li><a href="#"> Miscellaneous </a></li>
+                    </ul>
+                </li>
+            </ul>
+            <form role="search" class="navbar-form navbar-right">
+                <div class="form-group">
+                    <input type="text" placeholder="Search Here" class="form-control">
+                </div>
+            </form>
+        </div>
+    </nav>
+</div>
+<div class="container-fluid">
+    <div class="row">
+            <div class="col-md-12">
+                <canvas id="canvas">You browser does not support HTML5 Canvas</canvas>
+                <canvas id="preview">You browser does not support HTML5 Canvas</canvas>
+            </div>
+    </div>
 </div>
 
 <script src="lib/modernizr.2.8.3.js"></script>

@@ -12,15 +12,16 @@ Debugger.log = function(message) {
 }
 
 // Canvas start from top-left, and moves towards bottom-right.
-var theCanvas;
-var theStartBtn, theStopBtn, thePauseBtn;
-var running=false;
+var theCanvas, thePreview;
+var runMode="stopped";
 var theTimer;
 var NUM_COLUMNS = 10; // total columns on board
 var NUM_ROWS = 27; // total rows on board
 var UNIT=30; // square side length
 var WIDTH=NUM_COLUMNS*UNIT;
 var HEIGHT=NUM_ROWS*UNIT;
+var PREVIEW_WITH=6*UNIT;
+var PREVIEW_HEIGHT=6*UNIT;
 
 var thePiece; // the current piece
 
@@ -40,28 +41,9 @@ var theTick = 300; // miliseconds
 
 window.addEventListener('load',canvasApp,false)
 
-function start() {
-    if(running) return;
-    else{
-        theRows=generateRows(NUM_ROWS,NUM_COLUMNS,3);
-        theScore=0;
-        running=true;
-        nextPiece();
-        tick();
-    }
-}
-function stop(){
-    running=false;
-}
-
-function pause(){
-    running=!running;
-    tick();
-}
-
 function tick() {
     if (theTimer != null) clearTimeout(theTimer);
-    if (running) {
+    if (runMode==="running") {
         dropByOne();
         if(!isGameOver())
             theTimer = setTimeout(tick, theTick);
@@ -80,7 +62,7 @@ function dropByOne(){
         if(!isGameOver()){
             nextPiece();
         }else{
-            stop();
+            stopHandler();
         }
     }
     return moved;
@@ -103,7 +85,7 @@ function dropAllTheWay(){
     while (dropByOne()){
         theScore ++;
     }
-    if (running && !isGameOver()){
+    if (runMode==="running" && !isGameOver()){
         nextPiece();
     }
     drawScreen();
@@ -166,10 +148,25 @@ function drawScreen() {
         });
 }
 
+
+function drawPreview() {
+    Debugger.log("drawPreview...");
+
+    var context = thePreview.getContext("2d");
+
+    // fill background
+    context.fillStyle = "LightGray";
+    context.fillRect(0, 0, PREVIEW_WITH, PREVIEW_HEIGHT);
+
+    // draw outline box
+    context.strokeStyle = "#000000";
+    context.strokeRect(0, 0, PREVIEW_WITH, PREVIEW_HEIGHT);
+}
+
 // special keys only triggered by onKeyDown
 function onKeyDown(e){
     var key = String.fromCharCode(e.keyCode).toLowerCase();
-    Debugger.log("onKeyDown: keyCode="+ e.keyCode + ", char="+key);
+    Debugger.log("onKeyDown: keyCode="+ e.keyCode + ", char="+key+", e.ctrlKey="+ e.ctrlKey);
     switch(e.keyCode){
         case 32:
             Debugger.log("Space");
@@ -192,6 +189,19 @@ function onKeyDown(e){
             rotateClockwise();
             break;
         default:
+            if(e.ctrlKey){
+                switch(key) {
+                    case 's':
+                        startHandler();
+                        break;
+                    case 't':
+                        stopHandler();
+                        break;
+                    case 'p':
+                        pauseHandler();
+                        break;
+                }
+            }
             break;
     }
 }
@@ -202,12 +212,7 @@ function canvasApp() {
     }
 
     theCanvas = document.getElementById("canvas");
-    theStartBtn = document.getElementById("startGame");
-    theStartBtn.addEventListener('click',start);
-    theStopBtn = document.getElementById("stopGame");
-    theStopBtn.addEventListener('click',stop);
-    thePauseBtn = document.getElementById("pauseGame");
-    thePauseBtn.addEventListener('click',pause);
+    thePreview = document.getElementById("preview");
     window.addEventListener('keydown',onKeyDown,false);
 
     resizeCanvas();
@@ -220,7 +225,8 @@ function canvasApp() {
         return;
     }
 
-    drawScreen(theCanvas);
+    drawScreen();
+    drawPreview();
 
     Debugger.log("end of canvasApp");
 
@@ -233,6 +239,9 @@ function canvasSupport() {
 function resizeCanvas() {
     theCanvas.width = WIDTH;
     theCanvas.height = HEIGHT;
+
+    thePreview.width = PREVIEW_WITH;
+    thePreview.height = PREVIEW_HEIGHT;
 }
 
 /////////// UTILS ////////////
@@ -287,7 +296,7 @@ function generateRows(numRow,numCol,randRow){
  * @return {Boolean} true if move succeed; false if cannot move
  */
 function move(deltaX, deltaY, deltaRotation) {
-    if(isGameOver() || !running){
+    if(isGameOver() || runMode!=="running"){
         return false;
     }
 
@@ -358,8 +367,6 @@ function eliminateRows(){
     }
 
     theRows=newRows;
-    //  drawScreen
-//    drawScreen();
 }
 
 /**
@@ -419,4 +426,71 @@ function range(start, end) {
         foo.push(i);
     }
     return foo;
+}
+
+////// HOOKS ///////
+$(function(){
+    $("#startGame").click(startHandler);
+})
+$(function(){
+    $("#pauseGame").click(pauseHandler);
+})
+$(function(){
+    $("#stopGame").click(stopHandler);
+})
+
+function startHandler(){
+    if(runMode!=="stopped") return;
+    else{
+        theRows=generateRows(NUM_ROWS,NUM_COLUMNS,3);
+        theScore=0;
+        runMode="running";
+        nextPiece();
+        tick();
+    }
+    updateButtons()
+}
+function stopHandler(){
+    if(runMode==="stopped") return;
+    runMode="stopped";
+    updateButtons()
+}
+function pauseHandler(){
+    if(runMode==="paused")
+        runMode="running"
+    else if(runMode==="running")
+        runMode="paused";
+    else
+        return;
+    tick();
+    updateButtons()
+}
+
+function updateButtons(){
+    switch(runMode){
+        case "running":
+            $("#startGame").addClass("disabled");
+            $("#startGame").removeClass("active");
+            $("#stopGame").addClass("active");
+            $("#stopGame").removeClass("disabled");
+            $("#pauseGame").addClass("active");
+            $("#pauseGame").removeClass("disabled");
+            break;
+        case "stopped":
+            $("#startGame").removeClass("disabled");
+            $("#startGame").addClass("active");
+            $("#stopGame").removeClass("active");
+            $("#stopGame").addClass("disabled");
+            $("#pauseGame").addClass("disabled");
+            $("#pauseGame").addClass("active");
+            break;
+        case "paused":
+            $("#startGame").removeClass("active");
+            $("#startGame").addClass("disabled");
+            $("#stopGame").addClass("active");
+            $("#stopGame").removeClass("disabled");
+            $("#pauseGame").removeClass("disabled");
+            $("#pauseGame").addClass("active");
+            break;
+    }
 }
