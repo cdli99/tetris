@@ -20,10 +20,12 @@ var NUM_ROWS = 27; // total rows on board
 var UNIT=30; // square side length
 var WIDTH=NUM_COLUMNS*UNIT;
 var HEIGHT=NUM_ROWS*UNIT;
-var PREVIEW_WITH=6*UNIT;
-var PREVIEW_HEIGHT=6*UNIT;
+var PREVIEW_SIZE=5;
+var PREVIEW_WITH=PREVIEW_SIZE*UNIT;
+var PREVIEW_HEIGHT=PREVIEW_SIZE*UNIT;
 
 var thePiece; // the current piece
+var theNextPieceBuf; // queue for next pieces
 
 var theScore=0; // the accumulated score
 
@@ -75,18 +77,23 @@ function updateScore(){
 
 function nextPiece(){
     Debugger.log("fetch the next piece");
+    if(!theNextPieceBuf){
+        theNextPieceBuf=[randomPiece()];
+    }
+    theNextPieceBuf.push(randomPiece())
+    thePiece=theNextPieceBuf.shift();
+    setTimeout(drawPreview,theTick)
+}
+function randomPiece(){
     var allRotations = thePieces[Math.floor(Math.random()*thePieces.length)];
     var index = Math.floor(Math.random()*rotations.length);
     var clr = theColors[Math.floor(Math.random()*theColors.length)];
-    thePiece={rotations: allRotations, rotationIndex:index, color:clr, x:5, y:0, moved:false};
+    return {rotations: allRotations, rotationIndex:index, color:clr, x:5, y:0, moved:false};
 }
 function dropAllTheWay(){
     Debugger.log("drop the piece all the way down");
     while (dropByOne()){
         theScore ++;
-    }
-    if (runMode==="running" && !isGameOver()){
-        nextPiece();
     }
     drawScreen();
 }
@@ -148,7 +155,6 @@ function drawScreen() {
         });
 }
 
-
 function drawPreview() {
     Debugger.log("drawPreview...");
 
@@ -161,6 +167,22 @@ function drawPreview() {
     // draw outline box
     context.strokeStyle = "#000000";
     context.strokeRect(0, 0, PREVIEW_WITH, PREVIEW_HEIGHT);
+
+    // draw piece
+    if(theNextPieceBuf) {
+        var next = theNextPieceBuf[0];
+        var bound=computeBound(next.rotations[next.rotationIndex]);
+        var tx=Math.floor((PREVIEW_SIZE-bound.minx-bound.maxx)/2);
+        var ty=Math.floor((PREVIEW_SIZE-bound.miny-bound.maxy)/2);
+
+        next.rotations[next.rotationIndex].forEach(function (element, index, array) {
+            context.fillStyle = next.color;
+            context.fillRect(UNIT * (element[0] + tx), UNIT * (element[1] + ty), UNIT, UNIT);
+            context.fillStyle = "Black";
+            context.strokeRect(UNIT * (element[0] + tx), UNIT * (element[1] + ty), UNIT, UNIT);
+        });
+    }
+
 }
 
 // special keys only triggered by onKeyDown
@@ -214,21 +236,14 @@ function canvasApp() {
     theCanvas = document.getElementById("canvas");
     thePreview = document.getElementById("preview");
     window.addEventListener('keydown',onKeyDown,false);
-
     resizeCanvas();
-
-    Debugger.log(theCanvas);
-
     if (!theCanvas || !theCanvas.getContext) {
         Debugger.log("theCanvas or context does not exist");
-
         return;
     }
 
     drawScreen();
     drawPreview();
-
-    Debugger.log("end of canvasApp");
 
 }
 
