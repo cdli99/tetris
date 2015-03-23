@@ -12,7 +12,7 @@ Debugger.log = function(message) {
 }
 
 // Canvas start from top-left, and moves towards bottom-right.
-var theCanvas, thePreview;
+var theCanvas, thePreview, theScoreCanvas;
 var runMode="stopped";
 var theTimer;
 var NUM_COLUMNS = 10; // total columns on board
@@ -21,7 +21,7 @@ var UNIT=30; // square side length
 var WIDTH=NUM_COLUMNS*UNIT;
 var HEIGHT=NUM_ROWS*UNIT;
 var PREVIEW_SIZE=5;
-var PREVIEW_WITH=PREVIEW_SIZE*UNIT;
+var PREVIEW_WIDTH=PREVIEW_SIZE*UNIT;
 var PREVIEW_HEIGHT=PREVIEW_SIZE*UNIT;
 
 var thePiece; // the current piece
@@ -59,7 +59,6 @@ function dropByOne(){
     if(!moved){
         stackPiece();
         eliminateRows();
-        updateScore();
         drawScreen();
         if(!isGameOver()){
             nextPiece();
@@ -68,11 +67,6 @@ function dropByOne(){
         }
     }
     return moved;
-}
-
-function updateScore(){
-    Debugger.log("update the score");
-    theScore++;
 }
 
 function nextPiece(){
@@ -92,9 +86,7 @@ function randomPiece(){
 }
 function dropAllTheWay(){
     Debugger.log("drop the piece all the way down");
-    while (dropByOne()){
-        theScore ++;
-    }
+    while (dropByOne());
     drawScreen();
 }
 function moveLeft(){
@@ -162,11 +154,11 @@ function drawPreview() {
 
     // fill background
     context.fillStyle = "LightGray";
-    context.fillRect(0, 0, PREVIEW_WITH, PREVIEW_HEIGHT);
+    context.fillRect(0, 0, PREVIEW_WIDTH, PREVIEW_HEIGHT);
 
     // draw outline box
     context.strokeStyle = "#000000";
-    context.strokeRect(0, 0, PREVIEW_WITH, PREVIEW_HEIGHT);
+    context.strokeRect(0, 0, PREVIEW_WIDTH, PREVIEW_HEIGHT);
 
     // draw piece
     if(theNextPieceBuf) {
@@ -182,7 +174,25 @@ function drawPreview() {
             context.strokeRect(UNIT * (element[0] + tx), UNIT * (element[1] + ty), UNIT, UNIT);
         });
     }
+}
 
+function drawScore() {
+    Debugger.log("drawScore...");
+
+    var context = theScoreCanvas.getContext("2d");
+
+    // fill background
+    context.fillStyle = "LightGray";
+    context.fillRect(0, 0, PREVIEW_WIDTH, PREVIEW_HEIGHT);
+
+    // draw outline box
+    context.strokeStyle = "#000000";
+    context.strokeRect(0, 0, PREVIEW_WIDTH, PREVIEW_HEIGHT);
+
+
+    context.fillStyle= "#000000";
+    context.font="20px Georgia bold";
+    context.fillText(theScore, 10,PREVIEW_HEIGHT/2);
 }
 
 // special keys only triggered by onKeyDown
@@ -235,6 +245,7 @@ function canvasApp() {
 
     theCanvas = document.getElementById("canvas");
     thePreview = document.getElementById("preview");
+    theScoreCanvas = document.getElementById("score");
     window.addEventListener('keydown',onKeyDown,false);
     resizeCanvas();
     if (!theCanvas || !theCanvas.getContext) {
@@ -244,6 +255,7 @@ function canvasApp() {
 
     drawScreen();
     drawPreview();
+    drawScore();
 
 }
 
@@ -255,8 +267,12 @@ function resizeCanvas() {
     theCanvas.width = WIDTH;
     theCanvas.height = HEIGHT;
 
-    thePreview.width = PREVIEW_WITH;
+    thePreview.width = PREVIEW_WIDTH;
     thePreview.height = PREVIEW_HEIGHT;
+
+    theScoreCanvas.width = PREVIEW_WIDTH;
+    theScoreCanvas.height = PREVIEW_HEIGHT;
+
 }
 
 /////////// UTILS ////////////
@@ -366,6 +382,9 @@ function eliminateRows(){
            return col!==null;
         });
     });
+
+    theScore += rowsToRemove.length*rowsToRemove.length*10;
+    setTimeout(drawScore,theTick);
 
     // remove rowsToRemove
     var newRows=theRows.filter(function(row,index,rows){
